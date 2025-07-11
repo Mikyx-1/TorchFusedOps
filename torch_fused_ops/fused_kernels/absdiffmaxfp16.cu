@@ -28,9 +28,9 @@ void absdiffmax_blocks_kernel(const float* __restrict__ a,
     if (tid < stride) {
       smem[tid] = fmaxf(smem[tid], smem[tid + stride]);
     }
-    //__syncthreads();
+    __syncthreads();
   }
-  __syncthreads();
+
   if (tid == 0) {
     block_max[blockIdx.x] = smem[0];
   }
