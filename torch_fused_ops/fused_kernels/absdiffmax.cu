@@ -222,7 +222,15 @@ torch::Tensor absdiffmax(torch::Tensor a, torch::Tensor b)
 {
   TORCH_CHECK(a.is_cuda() && b.is_cuda(), "Inputs must be CUDA tensors");
   TORCH_CHECK(a.numel() == b.numel(), "Inputs must have same shape!");
-  
+
+  int device_id = a.device().index();
+  int current_device;
+  cudaGetDevice(&current_device);
+
+  if (current_device != device_id){
+    cudaSetDevice(device_id);
+  }
+
   auto dtype = a.scalar_type();  // Use scalar_type() instead of dtype()
   
   const int N = a.numel();
@@ -277,6 +285,10 @@ torch::Tensor absdiffmax(torch::Tensor a, torch::Tensor b)
     TORCH_CHECK(false, "Unsupported tensor dtype: ", dtype);
   }
 
+  // Restore the original device if we changed it
+  if (current_device != device_id){
+    cudaSetDevice(current_device);
+  }
   return block_max.max();
 }
 
